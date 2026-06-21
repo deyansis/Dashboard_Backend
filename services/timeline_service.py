@@ -2,6 +2,7 @@ from collections import defaultdict
 
 from services.supabase_service import supabase
 
+
 def obtener_timeline(
     fecha_inicio=None,
     fecha_fin=None,
@@ -11,7 +12,7 @@ def obtener_timeline(
     query = supabase.table(
         "comentarios"
     ).select(
-        "sentimiento,fecha_registro,prioridad"
+        "sentimiento, fecha_registro, prioridad"
     )
 
     if fecha_inicio:
@@ -25,7 +26,7 @@ def obtener_timeline(
 
         query = query.lte(
             "fecha_registro",
-            fecha_fin
+            f"{fecha_fin} 23:59:59"
         )
 
     if prioridad and prioridad != "todas":
@@ -49,9 +50,9 @@ def obtener_timeline(
 
     for comentario in comentarios:
 
-        fecha = comentario[
+        mes = comentario[
             "fecha_registro"
-        ][:10]
+        ][:7]
 
         sentimiento = comentario[
             "sentimiento"
@@ -59,40 +60,68 @@ def obtener_timeline(
 
         if sentimiento == "positivo":
 
-            timeline[fecha][
+            timeline[mes][
                 "positivos"
             ] += 1
 
         elif sentimiento == "negativo":
 
-            timeline[fecha][
+            timeline[mes][
                 "negativos"
             ] += 1
 
         else:
 
-            timeline[fecha][
+            timeline[mes][
                 "neutrales"
             ] += 1
 
     resultado = []
 
-    for fecha, valores in sorted(
+    nombres_meses = {
+        "01": "Ene",
+        "02": "Feb",
+        "03": "Mar",
+        "04": "Abr",
+        "05": "May",
+        "06": "Jun",
+        "07": "Jul",
+        "08": "Ago",
+        "09": "Sep",
+        "10": "Oct",
+        "11": "Nov",
+        "12": "Dic",
+    }
+
+    for mes, valores in sorted(
         timeline.items()
     ):
 
+        numero_mes = mes.split(
+            "-"
+        )[1]
+
         resultado.append({
 
-            "fecha": fecha,
+            "fecha":
+                nombres_meses[
+                    numero_mes
+                ],
 
             "positivos":
-                valores["positivos"],
+                valores[
+                    "positivos"
+                ],
 
             "negativos":
-                valores["negativos"],
+                valores[
+                    "negativos"
+                ],
 
             "neutrales":
-                valores["neutrales"]
+                valores[
+                    "neutrales"
+                ]
 
         })
 

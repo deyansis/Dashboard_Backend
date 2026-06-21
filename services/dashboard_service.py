@@ -22,7 +22,7 @@ def obtener_kpis_dashboard(
     if fecha_fin:
         query = query.lte(
             "fecha_registro",
-            fecha_fin
+            f"{fecha_fin} 23:59:59"
         )
 
     if prioridad and prioridad != "todas":

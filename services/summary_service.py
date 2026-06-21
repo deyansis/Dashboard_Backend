@@ -9,7 +9,7 @@ def obtener_resumen_dashboard(
     query = supabase.table(
         "comentarios"
     ).select(
-        "id,fecha_registro,prioridad"
+        "id,fecha_registro,prioridad,sentimiento"
     )
 
     if fecha_inicio:
@@ -23,7 +23,7 @@ def obtener_resumen_dashboard(
 
         query = query.lte(
             "fecha_registro",
-            fecha_fin
+            f"{fecha_fin} 23:59:59"
         )
 
     if prioridad and prioridad != "todas":
@@ -53,14 +53,50 @@ def obtener_resumen_dashboard(
 
             ultima_fecha = max(fechas)
 
+    positivos = len([
+        c for c in comentarios
+        if c["sentimiento"].lower() == "positivo"
+    ])
+
+    negativos = len([
+        c for c in comentarios
+        if c["sentimiento"].lower() == "negativo"
+    ])
+
+    neutrales = len([
+        c for c in comentarios
+        if c["sentimiento"].lower() in [
+            "neutral",
+            "neutro"
+        ]
+    ])
+
+    sentimiento_predominante = "-"
+
+    if total > 0:
+
+        sentimiento_predominante = max(
+            {
+                "Positivo": positivos,
+                "Negativo": negativos,
+                "Neutral": neutrales
+            },
+            key=lambda x: {
+                "Positivo": positivos,
+                "Negativo": negativos,
+                "Neutral": neutrales
+            }[x]
+        )
+
     return {
 
-        "total_comentarios": total,
+        "total_comentarios":
+            total,
 
-        "comentarios_analizados": total,
+        "ultima_fecha":
+            ultima_fecha,
 
-        "porcentaje_analizado": 100,
-
-        "ultima_fecha": ultima_fecha
+        "sentimiento_predominante":
+            sentimiento_predominante
 
     }
