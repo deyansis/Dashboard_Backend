@@ -1,10 +1,10 @@
+import os
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-EMAIL = "gamboadeyssi6@gmail.com"
-
-PASSWORD = "rkar nfda nikb hyia"
+EMAIL = os.getenv("EMAIL")
+PASSWORD = os.getenv("EMAIL_PASSWORD")
 
 
 def enviar_correo_codigo(correo_destino, codigo):
