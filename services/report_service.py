@@ -1,7 +1,8 @@
 from services.supabase_service import supabase
 
 from services.report_file_service import (
-    generar_pdf,
+    generar_pdf_completo,
+    generar_pdf_ejecutivo,
     generar_excel
 )
 
@@ -28,18 +29,20 @@ def obtener_reportes():
 
 def guardar_reporte(
     nombre,
-    formato
+    formato,
+    fecha_inicio,
+    fecha_fin
 ):
 
-    comentarios = (
-        obtener_comentarios_extraidos(
-            cantidad=50
-        )
-    )
+    resultado = obtener_comentarios_extraidos(
+    fecha_inicio=fecha_inicio,
+    fecha_fin=fecha_fin,
+    cantidad=100000
+)
 
-    total = len(
-        comentarios
-    )
+    comentarios = resultado["comentarios"]
+
+    total = len(comentarios)
 
     positivos = len([
         c for c in comentarios
@@ -53,25 +56,65 @@ def guardar_reporte(
 
     neutrales = len([
         c for c in comentarios
-        if c["sentimiento"] == "neutral"
+        if c["sentimiento"] == "neutro"
     ])
+
+    # 👇 DESDE AQUÍ TODO VA CON 4 ESPACIOS
 
     if formato == "PDF":
 
-        archivo = generar_pdf(
-            nombre,
-            comentarios,
-            total,
-            positivos,
-            negativos,
-            neutrales
-        )
+        if nombre == "Reporte de análisis completo":
+
+           archivo = generar_pdf_completo(
+    nombre,
+    comentarios,
+    total,
+    positivos,
+    negativos,
+    neutrales,
+    fecha_inicio,
+    fecha_fin
+)
+
+        elif nombre == "Reporte ejecutivo":
+
+            archivo = generar_pdf_ejecutivo(
+    nombre,
+    comentarios,
+    total,
+    positivos,
+    negativos,
+    neutrales,
+    fecha_inicio,
+    fecha_fin
+)
+
+
+        else:
+
+            archivo = generar_pdf_completo(
+    nombre,
+    comentarios,
+    total,
+    positivos,
+    negativos,
+    neutrales,
+    fecha_inicio,
+    fecha_fin
+)
 
     else:
 
         archivo = generar_excel(
-            nombre
-        )
+    nombre,
+    comentarios,
+    total,
+    positivos,
+    negativos,
+    neutrales,
+    fecha_inicio,
+    fecha_fin
+)
 
     response = (
         supabase

@@ -1,2 +1,3 @@
-2026/06/05-23:31:51.664 4b28 Creating DB C:\Users\SOPORTE\Downloads\tesis-sentimientos\backend\facebook_profile\Default\Local Storage\leveldb since it was missing.
-2026/06/05-23:31:52.065 4b28 Reusing MANIFEST C:\Users\SOPORTE\Downloads\tesis-sentimientos\backend\facebook_profile\Default\Local Storage\leveldb/MANIFEST-000001
+2026/06/25-13:59:21.713 37d0 Reusing MANIFEST C:\Users\SOPORTE\Downloads\tesis-sentimientos\backend\facebook_profile\Default\Local Storage\leveldb/MANIFEST-000001
+2026/06/25-13:59:21.727 37d0 Recovering log #3
+2026/06/25-13:59:21.733 37d0 Reusing old log C:\Users\SOPORTE\Downloads\tesis-sentimientos\backend\facebook_profile\Default\Local Storage\leveldb/000003.log 

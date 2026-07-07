@@ -4,13 +4,15 @@ from flask import request
 
 from services.config_service import (
     obtener_configuracion,
-    actualizar_configuracion
+    actualizar_configuracion,
+    actualizar_perfil
 )
 
 config_bp = Blueprint(
     "configuracion",
     __name__
 )
+
 
 @config_bp.route(
     "/configuracion",
@@ -37,10 +39,52 @@ def actualizar():
 
         data["tema"],
 
-        data["comentarios_maximos"]
+        data["comentarios_maximos"],
+
+        data["notificaciones"],
+
+        data["alertas_criticas"]
 
     )
 
     return jsonify({
         "success": True
+    })
+
+@config_bp.route(
+    "/perfil",
+    methods=["PUT"]
+)
+def actualizar_datos_perfil():
+
+    data = request.get_json()
+
+    usuario = actualizar_perfil(
+
+        data["nombre"],
+
+        data["correo"],
+
+        data["correo_actual"]
+
+    )
+
+    if usuario is None:
+
+        return jsonify({
+
+            "success": False,
+
+            "message": "No se pudo actualizar el perfil."
+
+        }), 400
+
+    usuario.pop("password", None)
+
+    return jsonify({
+
+        "success": True,
+
+        "usuario": usuario
+
     })

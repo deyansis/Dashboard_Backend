@@ -1,5 +1,6 @@
 from services.supabase_service import supabase
 
+
 def obtener_configuracion():
 
     response = (
@@ -19,7 +20,9 @@ def obtener_configuracion():
 def actualizar_configuracion(
     idioma,
     tema,
-    comentarios_maximos
+    comentarios_maximos,
+    notificaciones,
+    alertas_criticas
 ):
 
     response = (
@@ -32,11 +35,43 @@ def actualizar_configuracion(
             "tema": tema,
 
             "comentarios_maximos":
-                comentarios_maximos
+                comentarios_maximos,
+
+            "notificaciones":
+                notificaciones,
+
+            "alertas_criticas":
+                alertas_criticas
 
         })
         .eq("id", 1)
         .execute()
     )
 
-    return response.data
+def actualizar_perfil(
+    nombre,
+    correo,
+    correo_actual
+):
+
+    response = (
+        supabase
+        .table("usuarios")
+        .update({
+
+            "nombre": nombre,
+
+            "correo": correo
+
+        })
+        .eq("correo", correo_actual)
+        .execute()
+    )
+
+    if len(response.data) == 0:
+
+        return None
+
+    return response.data[0]
+
+    

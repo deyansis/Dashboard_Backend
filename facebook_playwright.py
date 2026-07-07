@@ -1,98 +1,229 @@
 from playwright.sync_api import sync_playwright
-import time
+
+from urllib.parse import urlparse, parse_qs
+
+from services.facebook_service import (
+    guardar_comentario_facebook,
+)
+
+
 
 
 def extraer_comentarios(url):
+
+    query = parse_qs(
+        urlparse(url).query
+    )
+
+    publicacion_id = query.get(
+        "fbid",
+        ["facebook"]
+    )[0]
+
+    print("URL:", url)
+    print("QUERY:", query)
+    print("PUBLICACION_ID:", publicacion_id)
 
     comentarios = []
 
     with sync_playwright() as p:
 
         context = p.chromium.launch_persistent_context(
-            user_data_dir="./facebook_profile",
-            headless=False
+
+            user_data_dir="facebook_profile",
+
+            headless=False,
+
+            viewport={
+                "width": 1366,
+                "height": 768,
+            },
+
         )
 
-        page = context.new_page()
+        if context.pages:
+
+            page = context.pages[0]
+
+        else:
+
+            page = context.new_page()
 
         print(
-            "Abriendo publicación..."
+            "\nAbriendo publicación..."
         )
 
         page.goto(
+
             url,
-            wait_until="networkidle"
+
+            wait_until="domcontentloaded",
+
         )
 
         print(
-            "\nINSTRUCCIONES:"
+            "Esperando que carguen los comentarios..."
         )
+
+        page.wait_for_timeout(
+            10000
+        )
+
+        for _ in range(2):
+
+            page.mouse.wheel(
+                0,
+                3000,
+            )
+
+            page.wait_for_timeout(
+                1500
+            )
 
         print(
-            "1. Si Facebook pide login, inicia sesión."
+            "Comentarios cargados."
         )
+
+        try:
+
+            page.keyboard.press(
+                "Escape"
+            )
+
+        except Exception:
+
+            pass
 
         print(
-            "2. Espera hasta ver la publicación."
+            "\nCapturando contenido..."
         )
-
-        print(
-            "3. Desplázate manualmente hasta los comentarios."
-        )
-
-        input(
-            "\nCuando veas los comentarios, presiona ENTER aquí..."
-        )
-
-        print(
-            "\nURL ACTUAL:"
-        )
-
-        print(page.url)
-
-        print(
-            "\nTÍTULO:"
-        )
-
-        print(page.title())
-
-        time.sleep(3)
 
         texto = page.locator(
             "body"
         ).inner_text()
 
-        print(
-            "\n=============================="
-        )
+        lineas = [
+
+            x.strip()
+
+            for x in texto.split("\n")
+
+            if x.strip()
+
+        ]
+
+        # Buscar donde empiezan los comentarios
+        inicio = 0
+
+        for i, linea in enumerate(lineas):
+
+            if linea.lower() == "más relevantes":
+
+                inicio = i + 1
+
+                break
+
+        ignorar = {
+
+            "Me gusta",
+            "Comentar",
+            "Compartir",
+            "Responder",
+            "Ver más comentarios",
+            "Comentarios",
+            "Todas las reacciones",
+            "Público",
+            "Seguir",
+            "Enviar",
+
+        }
+
+        i = inicio
+
+        while i < len(lineas) - 2:
+
+            usuario = lineas[i]
+
+            comentario = lineas[i + 1]
+
+            tiempo = lineas[i + 2]
+
+            if not tiempo.endswith("sem"):
+
+                i += 1
+
+                continue
+
+            if usuario in ignorar:
+
+                i += 1
+
+                continue
+
+            if len(comentario) < 5:
+
+                i += 3
+
+                continue
+
+            try:
+
+                resultado = guardar_comentario_facebook(
+
+                    usuario,
+
+                    comentario,
+
+                    publicacion_id,
+
+                )
+
+                if resultado:
+
+                    if isinstance(resultado, list):
+
+                        comentarios.append(
+                            resultado[0]
+                        )
+
+                    else:
+
+                        comentarios.append(
+                            resultado
+                        )
+
+                print(
+                    f"Usuario: {usuario}"
+                )
+
+                print(
+                    f"Comentario: {comentario}"
+                )
+
+                print(
+                    "-" * 60
+                )
+
+            except Exception as e:
+
+                print(
+                    "Error guardando comentario:"
+                )
+
+                print(e)
+
+            i += 3
+              
+
+          
 
         print(
-            "TEXTO CAPTURADO POR PLAYWRIGHT"
-        )
-
-        print(
-            "==============================\n"
-        )
-
-        print(
-            texto[:5000]
-        )
-
-        print(
-            "\n=============================="
-        )
-
-        print(
-            "FIN DEL TEXTO"
-        )
-
-        print(
-            "==============================\n"
+            f"\nTotal encontrados: {len(comentarios)}"
         )
 
         context.close()
 
-    return comentarios
+        return comentarios
 
 
 if __name__ == "__main__":

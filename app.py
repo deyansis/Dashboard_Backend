@@ -8,6 +8,7 @@ from routes.test_routes import test_bp
 from routes.report_routes import report_bp
 from routes.user_routes import user_bp
 from routes.config_routes import config_bp
+from routes.login import login_bp
 
 app = Flask(__name__)
 
@@ -39,6 +40,14 @@ app.register_blueprint(
     config_bp
 )
 
+app.register_blueprint(
+    login_bp
+)
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(
+        host="0.0.0.0",
+        port=5000,
+        debug=True
+    )
 

@@ -11,10 +11,18 @@ from services.comment_service import (
     actualizar_comentario
 )
 
+from facebook_playwright import (
+    extraer_comentarios
+)
+
 extraccion_bp = Blueprint(
     "extraccion",
     __name__
 )
+
+# ============================
+# EXTRAER FACEBOOK
+# ============================
 
 @extraccion_bp.route(
     "/extraer-facebook",
@@ -26,54 +34,76 @@ def extraer_facebook():
 
     url = data.get("url")
 
-    fecha_inicio = data.get(
-        "fecha_inicio"
-    )
+    if not url:
 
-    fecha_fin = data.get(
-        "fecha_fin"
-    )
+        return jsonify({
+            "error": "Debe enviar una URL."
+        }), 400
 
-    tema = data.get(
-        "tema"
-    )
-
-    cantidad = data.get(
-        "cantidad",
-        100
-    )
-
-    sentimiento = data.get(
-        "sentimiento"
-    )
-
-    print(
-        "URL recibida:",
-        url
-    )
-
-    print(
-        "Sentimiento:",
-        sentimiento
-    )
-
-    comentarios = (
-        obtener_comentarios_extraidos(
-            fecha_inicio,
-            fecha_fin,
-            tema,
-            cantidad,
-            sentimiento
-        )
-    )
+    # Extrae comentarios y los guarda en Supabase
+    comentarios = extraer_comentarios(url)
 
     return jsonify({
 
-        "comentarios":
-        comentarios
+        "comentarios": comentarios
 
     })
 
+
+# ============================
+# CONSULTAR COMENTARIOS
+# ============================
+
+@extraccion_bp.route(
+    "/comentarios",
+    methods=["GET"]
+)
+def obtener_comentarios():
+
+    fecha_inicio = request.args.get(
+        "fecha_inicio"
+    )
+
+    fecha_fin = request.args.get(
+        "fecha_fin"
+    )
+
+    cantidad = request.args.get(
+        "cantidad",
+        50
+    )
+
+    sentimiento = request.args.get(
+        "sentimiento"
+    )
+
+    pagina = request.args.get(
+        "pagina",
+        1
+    )
+
+    resultado = obtener_comentarios_extraidos(
+
+        fecha_inicio=fecha_inicio,
+
+        fecha_fin=fecha_fin,
+
+        tema=None,
+
+        cantidad=cantidad,
+
+        sentimiento=sentimiento,
+
+        pagina=pagina
+
+    )
+
+    return jsonify(resultado)
+
+
+# ============================
+# ELIMINAR
+# ============================
 
 @extraccion_bp.route(
     "/comentarios/<int:id>",
@@ -89,6 +119,10 @@ def eliminar(id):
 
     })
 
+
+# ============================
+# ACTUALIZAR
+# ============================
 
 @extraccion_bp.route(
     "/comentarios/<int:id>",
@@ -107,28 +141,17 @@ def actualizar(id):
     )
 
     actualizar_comentario(
+
         id,
+
         sentimiento,
+
         prioridad
+
     )
 
     return jsonify({
 
         "success": True
 
-    })
-
-@extraccion_bp.route(
-    "/comentarios",
-    methods=["GET"]
-)
-def obtener_comentarios():
-
-    comentarios = (
-        obtener_comentarios_extraidos()
-    )
-
-    return jsonify({
-        "comentarios":
-        comentarios
     })
