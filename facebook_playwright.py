@@ -1,12 +1,9 @@
 from playwright.sync_api import sync_playwright
-
 from urllib.parse import urlparse, parse_qs
 
 from services.facebook_service import (
     guardar_comentario_facebook,
 )
-
-
 
 
 def extraer_comentarios(url):
@@ -28,30 +25,30 @@ def extraer_comentarios(url):
 
     with sync_playwright() as p:
 
-        context = p.chromium.launch_persistent_context(
+        browser = p.chromium.launch(
 
-            user_data_dir="facebook_profile",
+            headless=True,
 
-            headless=False,
+            args=[
+                "--no-sandbox",
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage",
+            ]
+
+        )
+
+        context = browser.new_context(
 
             viewport={
                 "width": 1366,
                 "height": 768,
-            },
+            }
 
         )
 
-        if context.pages:
+        page = context.new_page()
 
-            page = context.pages[0]
-
-        else:
-
-            page = context.new_page()
-
-        print(
-            "\nAbriendo publicación..."
-        )
+        print("\nAbriendo publicación...")
 
         page.goto(
 
@@ -59,11 +56,11 @@ def extraer_comentarios(url):
 
             wait_until="domcontentloaded",
 
+            timeout=60000
+
         )
 
-        print(
-            "Esperando que carguen los comentarios..."
-        )
+        print("Esperando que carguen los comentarios...")
 
         page.wait_for_timeout(
             10000
@@ -80,9 +77,7 @@ def extraer_comentarios(url):
                 1500
             )
 
-        print(
-            "Comentarios cargados."
-        )
+        print("Comentarios cargados.")
 
         try:
 
@@ -94,9 +89,7 @@ def extraer_comentarios(url):
 
             pass
 
-        print(
-            "\nCapturando contenido..."
-        )
+        print("\nCapturando contenido...")
 
         texto = page.locator(
             "body"
@@ -112,7 +105,6 @@ def extraer_comentarios(url):
 
         ]
 
-        # Buscar donde empiezan los comentarios
         inicio = 0
 
         for i, linea in enumerate(lineas):
@@ -143,27 +135,22 @@ def extraer_comentarios(url):
         while i < len(lineas) - 2:
 
             usuario = lineas[i]
-
             comentario = lineas[i + 1]
-
             tiempo = lineas[i + 2]
 
             if not tiempo.endswith("sem"):
 
                 i += 1
-
                 continue
 
             if usuario in ignorar:
 
                 i += 1
-
                 continue
 
             if len(comentario) < 5:
 
                 i += 3
-
                 continue
 
             try:
@@ -192,36 +179,23 @@ def extraer_comentarios(url):
                             resultado
                         )
 
-                print(
-                    f"Usuario: {usuario}"
-                )
-
-                print(
-                    f"Comentario: {comentario}"
-                )
-
-                print(
-                    "-" * 60
-                )
+                print(f"Usuario: {usuario}")
+                print(f"Comentario: {comentario}")
+                print("-" * 60)
 
             except Exception as e:
 
-                print(
-                    "Error guardando comentario:"
-                )
-
+                print("Error guardando comentario:")
                 print(e)
 
             i += 3
-              
-
-          
 
         print(
             f"\nTotal encontrados: {len(comentarios)}"
         )
 
         context.close()
+        browser.close()
 
         return comentarios
 
