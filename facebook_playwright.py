@@ -27,7 +27,7 @@ def extraer_comentarios(url):
 
         browser = p.chromium.launch(
 
-            headless=False,
+            headless=True,
 
             args=[
                 "--no-sandbox",
