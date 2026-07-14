@@ -24,6 +24,7 @@ def extraer_comentarios(url):
     comentarios = []
 
     with sync_playwright() as p:
+        print("===== INICIANDO PLAYWRIGHT =====")
 
         browser = p.chromium.launch(
 
@@ -59,7 +60,7 @@ def extraer_comentarios(url):
             timeout=60000
 
         )
-
+        print("===== PAGINA CARGADA =====")
         print("Esperando que carguen los comentarios...")
 
         page.wait_for_timeout(
@@ -95,6 +96,7 @@ def extraer_comentarios(url):
             "body"
         ).inner_text()
 
+        print(f"===== TEXTO OBTENIDO: {len(texto)} caracteres =====")
         lineas = [
 
             x.strip()
@@ -196,7 +198,7 @@ def extraer_comentarios(url):
 
         context.close()
         browser.close()
-
+        print(f"===== TOTAL COMENTARIOS: {len(comentarios)} =====")
         return comentarios
 
 
