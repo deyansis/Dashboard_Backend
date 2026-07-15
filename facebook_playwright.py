@@ -103,9 +103,13 @@ def extraer_comentarios(url):
 
         print("\nCapturando contenido...")
 
-        texto = page.locator(
-            "body"
-        ).inner_text()
+        texto = page.locator("body").inner_text()
+
+        return [{
+            "usuario": "DEBUG",
+            "comentario": texto[:3000],
+            "publicacion_id": publicacion_id
+}]
         print("=========== TEXTO ===========")
         print(texto[:1000])   # con 1000 caracteres basta
         print("=========== FIN ===========")
