@@ -60,6 +60,17 @@ def extraer_comentarios(url):
             timeout=60000
 
         )
+
+        page.wait_for_timeout(5000)
+
+        print(page.title())
+
+        print(page.url)
+
+        print(page.locator("body").inner_text()[:1000]) 
+        page.screenshot(path="/tmp/facebook_debug.png", full_page=True)
+
+        print("CAPTURA GENERADA")
         print("===== PAGINA CARGADA =====")
         print("Esperando que carguen los comentarios...")
 
@@ -96,7 +107,7 @@ def extraer_comentarios(url):
             "body"
         ).inner_text()
         print("=========== TEXTO ===========")
-        print(texto[:5000])   # imprime los primeros 5000 caracteres
+        print(texto[:1000])   # con 1000 caracteres basta
         print("=========== FIN ===========")
 
         print(f"===== TEXTO OBTENIDO: {len(texto)} caracteres =====")
