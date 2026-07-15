@@ -95,6 +95,9 @@ def extraer_comentarios(url):
         texto = page.locator(
             "body"
         ).inner_text()
+        print("=========== TEXTO ===========")
+        print(texto[:5000])   # imprime los primeros 5000 caracteres
+        print("=========== FIN ===========")
 
         print(f"===== TEXTO OBTENIDO: {len(texto)} caracteres =====")
         lineas = [
