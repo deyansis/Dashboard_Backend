@@ -24,6 +24,7 @@ def extraer_comentarios(url):
     comentarios = []
 
     with sync_playwright() as p:
+
         print("===== INICIANDO PLAYWRIGHT =====")
 
         browser = p.chromium.launch(
@@ -64,38 +65,35 @@ def extraer_comentarios(url):
         page.wait_for_timeout(5000)
 
         print(page.title())
-
         print(page.url)
 
-        print(page.locator("body").inner_text()[:1000]) 
-        page.screenshot(path="/tmp/facebook_debug.png", full_page=True)
+        print(page.locator("body").inner_text()[:1000])
+
+        page.screenshot(
+            path="/tmp/facebook_debug.png",
+            full_page=True
+        )
 
         print("CAPTURA GENERADA")
         print("===== PAGINA CARGADA =====")
         print("Esperando que carguen los comentarios...")
 
-        page.wait_for_timeout(
-            10000
-        )
+        page.wait_for_timeout(10000)
 
         for _ in range(2):
 
             page.mouse.wheel(
                 0,
-                3000,
+                3000
             )
 
-            page.wait_for_timeout(
-                1500
-            )
+            page.wait_for_timeout(1500)
 
         print("Comentarios cargados.")
 
         try:
 
-            page.keyboard.press(
-                "Escape"
-            )
+            page.keyboard.press("Escape")
 
         except Exception:
 
@@ -105,16 +103,12 @@ def extraer_comentarios(url):
 
         texto = page.locator("body").inner_text()
 
-        return [{
-            "usuario": "DEBUG",
-            "comentario": texto[:3000],
-            "publicacion_id": publicacion_id
-}]
         print("=========== TEXTO ===========")
-        print(texto[:1000])   # con 1000 caracteres basta
+        print(texto[:1000])
         print("=========== FIN ===========")
 
         print(f"===== TEXTO OBTENIDO: {len(texto)} caracteres =====")
+
         lineas = [
 
             x.strip()
@@ -158,7 +152,19 @@ def extraer_comentarios(url):
             comentario = lineas[i + 1]
             tiempo = lineas[i + 2]
 
-            if not tiempo.endswith("sem"):
+            # Aceptar varios formatos de tiempo
+            if not any(
+                tiempo.endswith(x)
+                for x in [
+                    "sem",
+                    "h",
+                    "min",
+                    "d"
+                ]
+            ) and tiempo.lower() not in [
+                "ayer",
+                "hoy"
+            ]:
 
                 i += 1
                 continue
@@ -210,13 +216,13 @@ def extraer_comentarios(url):
 
             i += 3
 
-        print(
-            f"\nTotal encontrados: {len(comentarios)}"
-        )
+        print(f"\nTotal encontrados: {len(comentarios)}")
 
         context.close()
         browser.close()
+
         print(f"===== TOTAL COMENTARIOS: {len(comentarios)} =====")
+
         return comentarios
 
 
@@ -226,6 +232,4 @@ if __name__ == "__main__":
         "Ingrese URL Facebook: "
     )
 
-    extraer_comentarios(
-        url
-    )
+    extraer_comentarios(url)

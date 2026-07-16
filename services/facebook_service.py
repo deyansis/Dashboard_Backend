@@ -20,14 +20,16 @@ def guardar_comentario_facebook(
     publicacion_id,
 ):
 
+    # ==========================
     # Verificar si ya existe
+    # ==========================
 
     if publicacion_id is not None:
 
         existe = (
             supabase
             .table("comentarios")
-            .select("id")
+            .select("*")
             .eq(
                 "comentario",
                 comentario,
@@ -44,7 +46,7 @@ def guardar_comentario_facebook(
         existe = (
             supabase
             .table("comentarios")
-            .select("id")
+            .select("*")
             .eq(
                 "comentario",
                 comentario,
@@ -58,7 +60,11 @@ def guardar_comentario_facebook(
             f"Comentario duplicado omitido: {comentario[:40]}"
         )
 
-        return existe.data
+        return existe.data[0]
+
+    # ==========================
+    # Analizar comentario
+    # ==========================
 
     sentimiento = analizar_sentimiento(
         comentario
@@ -72,30 +78,26 @@ def guardar_comentario_facebook(
         comentario
     )
 
+    # ==========================
+    # Guardar en Supabase
+    # ==========================
+
     response = (
         supabase
         .table("comentarios")
         .insert(
             {
-
                 "usuario": usuario,
-
                 "comentario": comentario,
-
                 "sentimiento": sentimiento,
-
                 "prioridad": prioridad,
-
                 "confianza": 0.95,
-
                 "tema": tema,
-
                 "publicacion_id": (
                     publicacion_id
                     if publicacion_id
                     else None
                 ),
-
             }
         )
         .execute()
@@ -105,4 +107,20 @@ def guardar_comentario_facebook(
         f"Comentario guardado: {comentario[:40]}"
     )
 
-    return response.data
+    # ==========================
+    # Obtener registro completo
+    # ==========================
+
+    nuevo = (
+        supabase
+        .table("comentarios")
+        .select("*")
+        .eq(
+            "id",
+            response.data[0]["id"]
+        )
+        .single()
+        .execute()
+    )
+
+    return nuevo.data
