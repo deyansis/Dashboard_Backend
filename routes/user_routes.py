@@ -56,10 +56,25 @@ def crear():
 
     datos = request.json
 
-    return jsonify(
-        crear_usuario(datos)
-    )
+    try:
 
+        usuario = crear_usuario(datos)
+
+        return jsonify(usuario), 201
+
+    except ValueError as e:
+
+        return jsonify({
+            "success": False,
+            "message": str(e)
+        }), 400
+
+    except Exception:
+
+        return jsonify({
+            "success": False,
+            "message": "Ocurrió un error al registrar el usuario."
+        }), 500
 
 # ==========================
 # EDITAR USUARIO
