@@ -1,5 +1,6 @@
 from services.supabase_service import supabase
 
+
 def obtener_distribucion_sentimientos(
     fecha_inicio=None,
     fecha_fin=None,
@@ -33,9 +34,28 @@ def obtener_distribucion_sentimientos(
             prioridad
         )
 
-    response = query.execute()
+    comentarios = []
 
-    comentarios = response.data
+    inicio = 0
+    tamano = 1000
+
+    while True:
+
+        response = (
+            query
+            .range(inicio, inicio + tamano - 1)
+            .execute()
+        )
+
+        if not response.data:
+            break
+
+        comentarios.extend(response.data)
+
+        if len(response.data) < tamano:
+            break
+
+        inicio += tamano
 
     positivos = 0
     negativos = 0
